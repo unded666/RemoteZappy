@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  bridge:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PYTHONUNBUFFERED=1
+    # If you want the bridge to write to a v4l2 device on the host, uncomment and adjust:
+    # devices:
+    #   - /dev/video2:/dev/video2
+    # For development you may mount the source tree into the container (optional):
+    # volumes:
+    #   - ./:/app
+
+  # Optional: a service to run the example frame sender inside the compose network
+  frame_sender:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    command: ["python", "server/frame_sender_example.py", "--url", "ws://bridge:8080/framepipe", "--fps", "15"]
+    depends_on:
+      - bridge
+    # Only start the frame sender when you need it; comment out in production
+    # scale: 0
+

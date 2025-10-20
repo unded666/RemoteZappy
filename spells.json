@@ -1,0 +1,72 @@
+[
+  {
+    "name": "Firebolt",
+    "damage": 10,
+    "mana_cost": 5,
+    "recipe": ["fire", "projectile"],
+    "aoe": 0
+  },
+  {
+    "name": "Magic Missile",
+    "damage": 8,
+    "mana_cost": 4,
+    "recipe": ["projectile"],
+    "aoe": 0
+  },
+  {
+    "name": "Shield",
+    "damage": 0,
+    "mana_cost": 12,
+    "recipe": ["shield"],
+    "aoe": 0
+  },
+  {
+    "name": "Fireball",
+    "damage": 20,
+    "mana_cost": 10,
+    "recipe": ["magnify", "fire", "projectile"],
+    "aoe": 250
+  },
+  {
+    "name": "Greater Magic Missile",
+    "damage": 16,
+    "mana_cost": 8,
+    "recipe": ["magnify", "projectile"],
+    "aoe": 150
+  },
+  {
+    "name": "Ice Bolt",
+    "damage": 10,
+    "mana_cost": 5,
+    "recipe": ["ice", "projectile"],
+    "aoe": 0
+  },
+  {
+    "name": "Ice Blast",
+    "damage": 20,
+    "mana_cost": 10,
+    "recipe": ["magnify", "ice", "projectile"],
+    "aoe": 250
+  },
+  {
+    "name": "Cataclysm",
+    "damage": 50,
+    "mana_cost": 20,
+    "recipe": ["magnify", "fire", "ice", "magnify", "projectile"],
+    "aoe": 900
+  },
+  {
+    "name": "Fire Shield",
+    "damage": 0,
+    "mana_cost": 15,
+    "recipe": ["fire", "shield"],
+    "aoe": 0
+  },
+  {
+    "name": "Ice Shield",
+    "damage": 0,
+    "mana_cost": 15,
+    "recipe": ["ice", "shield"],
+    "aoe": 0
+  }
+]

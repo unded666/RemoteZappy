@@ -1,0 +1,5 @@
+In order to install the custom GestureControl project, run the following command from the venv terminal:
+pip install -e c:\PersonalProjects\GestureControl (modify if the directory changes)
+
+This installs the custom gesture control suite built to store gestures and train models to recognise
+them all using a webcam.

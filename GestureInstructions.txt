@@ -1,0 +1,4 @@
+GestureControl is a package that has been imported into this project to handle gesture recognition using a webcam.
+
+The package stores gestures and trains models to recognise those gestures. The package has full documentation,
+so make use of the documentation in order to use the package effectively.

@@ -1,0 +1,55 @@
+Create a game in which the player plays a wizard. The game should be build using the Pygame engine.
+The player's character should be able to cast the following spells:
+Firebolt, Magic missile, Shield, Fireball, greater magic missile, ice bolt and ice blast.
+
+The player's character does not move. The camera is over the player's right-hand shoulder.
+Obstacles spawn in front of the player and move towards the player.
+The player must cast spells to destroy the obstacles before they reach the player. Each obstacle
+has an amount of health, and each spell does a set amount of damage. Spells cast use up an amount
+of mana, and the player has a set amount of mana that regenerates over time. Create a configuration file
+for the spells that contains the following information:
+
+- Name
+- Damage
+- Mana cost
+- recipe
+
+The player can only cast a spell if they have enough mana. The player can only cast one spell at a time.
+The player casts spells by combining the commands in the recipe. For example, the recipe for firebolt
+is 'fire', 'projectile'. The player can cast firebolt by entering the commands 'fire' and 'projectile'
+in that order. The commands the player has available are:
+
+- fire
+- ice
+- projectile
+- shield
+- magnify
+
+The keyboard hotkeys for these commands must be customisable. Their defaults should be:
+- fire: F
+- ice: I
+- projectile: P
+- shield: S
+- magnify: M
+
+Create a configuration file for the obstacles that contains the following information:
+- Name
+- Health
+- Speed
+- Weakness
+- Damage
+- Points
+
+If a projectile is hit with its weakness, it takes double damage.
+
+The game should stop when the player runs out of health.
+
+Spells cast should have a visual effect, and obstacles should have a visual representation. When
+an obstacle is at half health it should change colour to indicate its health status. It should
+be destroyed in a short animation of no more than 0.5 seconds when it reaches 0 or less health.
+The shield spell should create a visual barrier around the player that lasts for 3 seconds. This
+barrier will block 70 percent of the incoming damage.
+
+The player input should be modular, as at a later stage the inputs will be replaced by a more complex
+input mechanism than the keyboard inputs.
+
