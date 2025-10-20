@@ -46,6 +46,8 @@ Next suggested actions (pick one)
 Change log (automated)
 - 2025-10-20T00:00:00Z — Updated context to record bridge env-configurable forwarding and recent web/client/game edits.
 - 2025-10-20T00:05:00Z — Added server/start-all.sh (wrapper to run headless game + bridge), updated server/Dockerfile to copy the script and install minimal SDL/Xvfb libs, added /healthz endpoint to server/bridge.py, and added pygame to requirements-poc.txt so the combined Docker image can run the game headless.
+- 2025-10-20T00:18:00Z — Vendored full GestureControl package into `gesture_control/` and updated `server/Dockerfile` to install `requirements.txt` so the image build includes GestureControl dependencies.
+- 2025-10-20T00:25:00Z — Replaced inaccessible git/local dependency for GestureControl in `requirements.txt` and added `runtime.txt` pinning Python to 3.11 for Render non-Docker builds to ensure packages like `mediapipe` have compatible wheels.
 
 Recent assistant actions (concise, 2025-10-20):
 - Attempted a local Docker build and confirmed Docker is not installed on the user's Windows machine; local docker build failed.
