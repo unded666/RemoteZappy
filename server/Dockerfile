@@ -9,6 +9,10 @@ RUN apt-get update \
         ffmpeg \
         xvfb \
         git \
+        libglib2.0-0 \
+        libgl1 \
+        libsm6 \
+        libfontconfig1 \
         libsdl2-2.0-0 \
         libdbus-1-3 \
         libasound2 \
