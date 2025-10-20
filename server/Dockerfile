@@ -27,16 +27,17 @@ RUN apt-get update \
 WORKDIR /app
 
 # Copy only what's needed for the PoC
-COPY requirements-poc.txt /app/
+COPY requirements.txt /app/
 COPY server /app/server
 COPY web /app/web
 COPY main.py /app/main.py
 COPY magic.py /app/magic.py
 COPY *.json /app/
 COPY icons /app/icons
+COPY gesture_control /app/gesture_control
 
 RUN python -m pip install --upgrade pip
-RUN pip install -r requirements-poc.txt
+RUN pip install -r requirements.txt
 
 # Copy the start script and make it executable
 COPY server/start-all.sh /app/server/start-all.sh

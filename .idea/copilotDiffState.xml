@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/server/Dockerfile">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/server/Dockerfile" />
+              <option name="originalContent" value="FROM python:3.11-slim&#10;&#10;ENV PYTHONUNBUFFERED=1&#10;&#10;# Install system deps needed by aiortc / av / ffmpeg and minimal libs for headless pygame&#10;RUN apt-get update \&#10;    &amp;&amp; apt-get install -y --no-install-recommends \&#10;        build-essential \&#10;        ffmpeg \&#10;        xvfb \&#10;        git \&#10;        libsdl2-2.0-0 \&#10;        libdbus-1-3 \&#10;        libasound2 \&#10;        libx11-6 \&#10;        libxext6 \&#10;        libxrender1 \&#10;        fonts-dejavu-core \&#10;        libavcodec-dev libavformat-dev libavdevice-dev libavutil-dev libavfilter-dev libavresample-dev \&#10;        pkg-config \&#10;        libssl-dev \&#10;        libsrtp2-dev \&#10;        libopus-dev \&#10;        libv4l-dev \&#10;    &amp;&amp; rm -rf /var/lib/apt/lists/*&#10;&#10;WORKDIR /app&#10;&#10;# Copy only what's needed for the PoC&#10;COPY requirements-poc.txt /app/&#10;COPY server /app/server&#10;COPY web /app/web&#10;COPY main.py /app/main.py&#10;COPY magic.py /app/magic.py&#10;COPY *.json /app/&#10;COPY icons /app/icons&#10;COPY gesture_control /app/gesture_control&#10;&#10;RUN python -m pip install --upgrade pip&#10;RUN pip install -r requirements-poc.txt&#10;&#10;# Copy the start script and make it executable&#10;COPY server/start-all.sh /app/server/start-all.sh&#10;RUN chmod +x /app/server/start-all.sh&#10;&#10;EXPOSE 8080&#10;&#10;# Run the wrapper script which starts both the game (headless) and the bridge&#10;CMD [&quot;/app/server/start-all.sh&quot;]&#10;" />
+              <option name="updatedContent" value="FROM python:3.11-slim&#10;&#10;ENV PYTHONUNBUFFERED=1&#10;&#10;# Install system deps needed by aiortc / av / ffmpeg and minimal libs for headless pygame&#10;RUN apt-get update \&#10;    &amp;&amp; apt-get install -y --no-install-recommends \&#10;        build-essential \&#10;        ffmpeg \&#10;        xvfb \&#10;        git \&#10;        libsdl2-2.0-0 \&#10;        libdbus-1-3 \&#10;        libasound2 \&#10;        libx11-6 \&#10;        libxext6 \&#10;        libxrender1 \&#10;        fonts-dejavu-core \&#10;        libavcodec-dev libavformat-dev libavdevice-dev libavutil-dev libavfilter-dev libavresample-dev \&#10;        pkg-config \&#10;        libssl-dev \&#10;        libsrtp2-dev \&#10;        libopus-dev \&#10;        libv4l-dev \&#10;    &amp;&amp; rm -rf /var/lib/apt/lists/*&#10;&#10;WORKDIR /app&#10;&#10;# Copy only what's needed for the PoC&#10;COPY requirements-poc.txt /app/&#10;COPY server /app/server&#10;COPY web /app/web&#10;COPY main.py /app/main.py&#10;COPY magic.py /app/magic.py&#10;COPY *.json /app/&#10;COPY icons /app/icons&#10;COPY gesture_control /app/gesture_control&#10;&#10;RUN python -m pip install --upgrade pip&#10;RUN pip install -r requirements-poc.txt&#10;&#10;# Copy the start script and make it executable&#10;COPY server/start-all.sh /app/server/start-all.sh&#10;RUN chmod +x /app/server/start-all.sh&#10;&#10;EXPOSE 8080&#10;&#10;# Run the wrapper script which starts both the game (headless) and the bridge&#10;CMD [&quot;/app/server/start-all.sh&quot;]" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
