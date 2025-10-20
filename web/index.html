@@ -7,6 +7,11 @@
     body { font-family: Arial, sans-serif; margin: 16px; }
     video { border: 1px solid #444; width: 640px; height: 480px; background: #000; }
     #controls { margin-top: 8px; }
+    .cmd-row { margin-top: 12px; }
+    .cmd-btn { padding: 8px 12px; margin-right: 8px; font-size: 16px; }
+    #status { margin-top: 10px; font-size: 14px; }
+    #status span.green { color: green; }
+    #status span.red { color: red; }
   </style>
 </head>
 <body>
@@ -19,6 +24,24 @@
   </div>
   <div id="controls">
     <button id="start">Start</button>
+  </div>
+
+  <!-- Status panel -->
+  <div id="status">
+    WebRTC: <span id="webrtc-status" class="red">disconnected</span>
+    &nbsp;|&nbsp;
+    DataChannel: <span id="dc-status" class="red">closed</span>
+    &nbsp;|&nbsp;
+    Last command: <span id="last-cmd">-</span>
+  </div>
+
+  <!-- Command buttons for sending spell components/commands from the browser -->
+  <div class="cmd-row" id="cmds">
+    <button class="cmd-btn" id="cmd-fire">Fire</button>
+    <button class="cmd-btn" id="cmd-ice">Ice</button>
+    <button class="cmd-btn" id="cmd-projectile">Projectile</button>
+    <button class="cmd-btn" id="cmd-shield">Shield</button>
+    <button class="cmd-btn" id="cmd-magnify">Magnify</button>
   </div>
 
   <script src="/static/client.js"></script>

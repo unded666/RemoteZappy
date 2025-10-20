@@ -861,8 +861,19 @@ class Game:
                         elif selected == 'Quit':
                             self.running = False
             elif self.state == 'playing':
+                # Priority: Escape to return to menu, then remote command events from input listener,
+                # then regular input handling via InputHandler.
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     self.state = 'start'
+                elif event.type == pygame.USEREVENT:
+                    # remote command posted by the input TCP handler in another thread
+                    try:
+                        cmd = getattr(event, 'remote_command', None)
+                        if cmd:
+                            append_command_sequence(self.command_sequence, cmd)
+                            self.try_cast_spell_from_sequence()
+                    except Exception:
+                        pass
                 else:
                     cmd = self.input_handler.handle_event(event)
                     if cmd:
@@ -1635,6 +1646,16 @@ class Game:
                                     ev_type = pygame.KEYDOWN if down else pygame.KEYUP
                                     ev = pygame.event.Event(ev_type, {'key': keycode, 'mod': 0})
                                     pygame.event.post(ev)
+                                # support direct commands from remote clients: {"type":"command","command":"fire"}
+                                elif msg.get('type') == 'command':
+                                    try:
+                                        cmd = msg.get('command')
+                                        if isinstance(cmd, str) and cmd:
+                                            # post a USEREVENT so the main thread processes the command safely
+                                            ev = pygame.event.Event(pygame.USEREVENT, {'remote_command': cmd})
+                                            pygame.event.post(ev)
+                                    except Exception:
+                                        pass
                         except Exception:
                             # ignore malformed lines
                             continue
