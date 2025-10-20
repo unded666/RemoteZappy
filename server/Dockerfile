@@ -2,11 +2,19 @@ FROM python:3.11-slim
 
 ENV PYTHONUNBUFFERED=1
 
-# Install system deps needed by aiortc / av / ffmpeg
+# Install system deps needed by aiortc / av / ffmpeg and minimal libs for headless pygame
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         build-essential \
         ffmpeg \
+        xvfb \
+        libsdl2-2.0-0 \
+        libdbus-1-3 \
+        libasound2 \
+        libx11-6 \
+        libxext6 \
+        libxrender1 \
+        fonts-dejavu-core \
         libavcodec-dev libavformat-dev libavdevice-dev libavutil-dev libavfilter-dev libavresample-dev \
         pkg-config \
         libssl-dev \
@@ -29,7 +37,11 @@ COPY icons /app/icons
 RUN python -m pip install --upgrade pip
 RUN pip install -r requirements-poc.txt
 
+# Copy the start script and make it executable
+COPY server/start-all.sh /app/server/start-all.sh
+RUN chmod +x /app/server/start-all.sh
+
 EXPOSE 8080
 
-CMD ["python", "server/bridge.py", "--host", "0.0.0.0"]
-
+# Run the wrapper script which starts both the game (headless) and the bridge
+CMD ["/app/server/start-all.sh"]

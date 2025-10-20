@@ -1,58 +1,50 @@
-Conversation snapshot — updated 2025-10-20 (latest change: web UI status panel)
+Conversation snapshot — updated 2025-10-20 (latest change: bridge input-forward config)
 
 Repository: RemoteZappy (local path: C:\PersonalProjects\RemoteZappy)
 Purpose: PoC to make the Zappy game playable through a browser by adding a WebRTC bridge, frame-push API, and input forwarding.
 
-Summary of workspace (key files/folders)
-- main.py               : The game (pygame) with optional TCP input listener and optional frame-push worker.
-- input_handler.py      : Keyboard-to-command mapping and command-queue helper used by the game.
-- magic.py, spells.json : Game spell logic and spell definitions.
-- server/bridge.py      : aiohttp + aiortc media bridge that accepts /offer (WebRTC) and forwards datachannel messages to local TCP server; provides /framepipe websocket for pushed JPEG frames.
-- server/frame_sender_example.py : Example client that connects to /framepipe and sends JPEG frames (for testing bridge frame-push).
-- web/index.html        : Web client page (local webcam + remote video + command buttons + status panel).
-- web/client.js         : WebRTC client code; sends webcam, creates a reliable datachannel named 'input', sends keyboard events and command JSON messages over it; updates UI status indicators.
-- icons/, gestures/     : Game assets and gesture tooling (gesture studio external package referenced).
-- current_context.txt   : This file (concise runtime/conversation snapshot, kept current).
+Key files (roles)
+- `main.py`               : The game (pygame) with optional TCP input listener and optional frame-push worker.
+- `input_handler.py`      : Keyboard-to-command mapping and command-queue helper used by the game.
+- `magic.py`, `spells.json`: Game spell logic and spell definitions.
+- `server/bridge.py`      : aiohttp + aiortc media bridge: handles /offer (WebRTC), /framepipe (JPEG frames), and forwards datachannel messages to a configured input target.
+- `server/frame_sender_example.py` : Example client that connects to /framepipe and sends JPEG frames.
+- `web/index.html`        : Web client page (local webcam + remote video + command buttons + status panel).
+- `web/client.js`         : WebRTC client; creates a reliable datachannel `input`, sends keyboard and command JSON messages; updates UI status indicators.
+- `scripts/update_current_context.py`: Helper script to append timestamped notes to this context file.
 
-Recent changes in this conversation (concise)
-- Added a small status panel in `web/index.html` showing WebRTC connection state, datachannel state, and the last command sent.
-- Wired the status UI in `web/client.js`: updates on connection/datachannel events and when command buttons are clicked.
-- Previously implemented: bridge, framepipe, frame_sender_example, command buttons, datachannel forwarding, and game-side TCP command handling/USEREVENT injection.
+Recent edits (concise chronology)
+- Added WebRTC bridge and frame-push API (server/bridge.py) to accept frames and stream to browsers.
+- Added an example frame sender (`server/frame_sender_example.py`) for testing /framepipe.
+- Web client improvements: command buttons and a small status panel in `web/index.html`; `web/client.js` sends `{type:'command', command:'...'}` over the `input` datachannel and updates status on connection events.
+- Game integration: `main.py` already had a local TCP input listener; extended it to accept JSON command lines `{ "type": "command", "command": "fire" }` and post a `pygame.USEREVENT` with `remote_command` so the main thread handles remote commands safely.
+- Added `scripts/update_current_context.py` to append short timestamped notes to this file.
+- Latest (2025-10-20): `server/bridge.py` now supports environment-driven configuration for input forwarding and framepipe behavior:
+  - `INPUT_FORWARD_HOST` and `INPUT_FORWARD_PORT` allow a bridge on Render (or other host) to forward datachannel messages to a remote reachable game server (instead of hardcoded 127.0.0.1:5001).
+  - `FRAMEPIPE_ALLOW_REMOTE` (env) toggles whether `/framepipe` accepts remote connections (default is loopback-only). Use with care — consider enabling only with additional auth.
 
-What I implemented in this session (full chronology)
-1) server/bridge.py: WebRTC bridge, /offer, /framepipe; forwards datachannel messages to local TCP port 5001; loopback-only framepipe by default; --allow-framepipe-remote CLI flag added.
-2) server/frame_sender_example.py: frame-push test client producing JPEG frames.
-3) web/index.html: added command buttons and, now, a status panel.
-4) web/client.js: sends keyboard and command JSON messages over a reliable datachannel; now updates the status panel; buttons provide visual feedback and set `last command`.
-5) main.py: extended local TCP input listener to accept {"type":"command","command":"..."} lines and post thread-safe pygame.USEREVENT events processed on the main thread; fixed input handling branch order.
-6) current_context.txt: updated (this file) after each meaningful repo change; will continue to be updated whenever edits occur as a result of this conversation.
+Run / smoke-test notes
+- Bridge (Render or Linux host) should be started with a command binding to the service port, e.g.:
+  python server\bridge.py --host 0.0.0.0 --port $PORT
+- If bridge is remote and the game lives on another reachable server, set in the bridge's environment:
+  INPUT_FORWARD_HOST=<game-public-ip>
+  INPUT_FORWARD_PORT=5001
+  FRAMEPIPE_ALLOW_REMOTE=1   # only if the game needs to push frames remotely
+- On the game host, point the game to the bridge's `/framepipe` (if using frame push):
+  FRAMEPIPE_URL=wss://<bridge-host>/framepipe
+  python main.py
 
-Run / smoke-test instructions (local dev)
-Prereqs: Python 3.10+, venv with required packages installed (aiortc, av, aiohttp, Pillow, pygame, etc.)
+Security & recommendations
+- Don't enable `FRAMEPIPE_ALLOW_REMOTE` without adding authentication. If you want, I can add a `FRAMEPIPE_SECRET` env var check (the frame client must include the secret when connecting) — I recommend doing that if hosting the bridge publicly.
+- Ensure `INPUT_FORWARD_HOST` points to a reachable, properly firewalled host. If your game is behind NAT or local only, prefer hosting both bridge + game on the same cloud VM (simplest).
 
-1) Start the bridge server (example):
-   python server\bridge.py --host 0.0.0.0 --port 8080
+Next suggested actions (pick one)
+- I can add `FRAMEPIPE_SECRET` authentication to `/framepipe` (quick, recommended if you enable FRAMEPIPE_ALLOW_REMOTE).
+- I can draft a short Render.com service configuration checklist (exact UI fields and sample env values) so you can deploy the bridge on Render easily.
+- I can add a small log/visual in the game to confirm remote command receipt.
 
-2) Start the game locally (enable input listener so the bridge can forward commands):
-   set INPUT_LISTEN_PORT=5001
-   set FRAMEPIPE_URL=ws://127.0.0.1:8080/framepipe   # optional
-   python main.py
-
-3) Open the web client in a browser pointed at the bridge host (e.g. http://127.0.0.1:8080/) and click Start; grant webcam access.
-   - After the WebRTC connection establishes, clicking command buttons will send JSON command messages -> bridge -> 127.0.0.1:5001 -> game.
-   - Status panel will show connection and datachannel state; Last command will show the most recent command sent.
-
-Design notes & safety
-- The /framepipe endpoint is intended for loopback use; the bridge rejects remote connections by default. Use --allow-framepipe-remote only when you understand the security tradeoffs.
-- The bridge forwards the raw datachannel payload to a local TCP listener without authentication; this is a PoC convenience mechanism. For production, add authentication and message validation.
-
-Conversation / work state
-- The core PoC (browser → WebRTC/datachannel → bridge → local TCP → game) is implemented and wired. The web UI now includes status feedback.
-- Static checks in this environment may flag missing packages (pygame, aiortc, etc.). Those are environmental and don't indicate repository logic errors.
-
-Next recommended steps (I can do now if you want)
-- Create an automated headless test script to exercise the datachannel -> bridge -> game path (useful for CI / regression checks).
-- Add a small visual indicator in the game or logs when a remote command is applied, to help debugging remote clients.
-- Add a minimal docker-compose and README for a Linux host deployment (bridge + optional game runner).
+Change log (automated)
+- 2025-10-20T00:00:00Z — Updated context to record bridge env-configurable forwarding and recent web/client/game edits.
+- 2025-10-20T00:05:00Z — Added server/start-all.sh (wrapper to run headless game + bridge), updated server/Dockerfile to copy the script and install minimal SDL/Xvfb libs, added /healthz endpoint to server/bridge.py, and added pygame to requirements-poc.txt so the combined Docker image can run the game headless.
 
 --- End of snapshot ---

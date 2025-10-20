@@ -157,7 +157,13 @@ async def offer(request):
 
                 async def _forward():
                     try:
-                        reader, writer = await asyncio.open_connection('127.0.0.1', 5001)
+                        # Use configured input forward target (allows bridge to run remote from the game)
+                        host = pc._data._session_description and None  # placeholder to avoid lint
+                        forward_host = channel._transport._loop and None  # placeholder
+                        # read from the app configuration available on the request handler via closure
+                        app_forward_host = request.app.get('input_forward_host', '127.0.0.1')
+                        app_forward_port = int(request.app.get('input_forward_port', 5001))
+                        reader, writer = await asyncio.open_connection(app_forward_host, app_forward_port)
                         writer.write(msg_bytes + b"\n")
                         await writer.drain()
                         writer.close()
@@ -188,6 +194,14 @@ async def framepipe(request):
     This endpoint should be bound to localhost (loopback) in deployment — do not expose
     it publicly unless you add authentication.
     """
+    # If a FRAMEPIPE_SECRET is configured, require the client to provide it as a query param
+    framepipe_secret = request.app.get('framepipe_secret')
+    if framepipe_secret:
+        provided = request.query.get('secret') or request.headers.get('X-Framepipe-Secret')
+        if not provided or provided != framepipe_secret:
+            logger.warning("Rejected /framepipe connection with missing/invalid secret from %s", request.remote)
+            return web.HTTPForbidden(reason="Invalid or missing framepipe secret")
+
     # Reject non-loopback connections by default, unless --allow-framepipe-remote is set
     if not request.app["framepipe_allow_remote"] and request.remote and request.remote[0] != "127.0.0.1":
         return web.HTTPForbidden(reason="Remote connections to /framepipe are not allowed")
@@ -234,6 +248,11 @@ async def framepipe(request):
     return ws
 
 
+async def healthz(request):
+    """Simple health endpoint used by hosting platforms for liveness checks."""
+    return web.Response(text="ok")
+
+
 async def on_shutdown(app):
     coros = [pc.close() for pc in list(pcs)]
     await asyncio.gather(*coros)
@@ -255,12 +274,27 @@ def main():
     ensure_web_root()
 
     app = web.Application()
+    # Prefer explicit CLI args, but allow overriding via environment variables for cloud deployment
     app["v4l2_path"] = args.v4l2
-    app["framepipe_allow_remote"] = bool(args.allow_framepipe_remote)
+    # framepipe allow: check env var FRAMEPIPE_ALLOW_REMOTE = '1' or CLI flag
+    env_allow = os.environ.get('FRAMEPIPE_ALLOW_REMOTE')
+    if env_allow is not None:
+        app["framepipe_allow_remote"] = env_allow in ('1', 'true', 'True')
+    else:
+        app["framepipe_allow_remote"] = bool(args.allow_framepipe_remote)
+    # input forwarding target: default to localhost:5001 but allow overriding via env vars
+    app['input_forward_host'] = os.environ.get('INPUT_FORWARD_HOST', '127.0.0.1')
+    try:
+        app['input_forward_port'] = int(os.environ.get('INPUT_FORWARD_PORT', '5001'))
+    except Exception:
+        app['input_forward_port'] = 5001
+    # Optional secret to protect /framepipe when accepting remote pushes
+    app['framepipe_secret'] = os.environ.get('FRAMEPIPE_SECRET')
     app.on_shutdown.append(on_shutdown)
     app.router.add_get("/", index)
     app.router.add_post("/offer", offer)
     app.router.add_get("/framepipe", framepipe)
+    app.router.add_get("/healthz", healthz)
     app.router.add_static("/static/", WEB_ROOT)
 
     web.run_app(app, host=args.host, port=args.port)
