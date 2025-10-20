@@ -8,6 +8,7 @@ RUN apt-get update \
         build-essential \
         ffmpeg \
         xvfb \
+        git \
         libsdl2-2.0-0 \
         libdbus-1-3 \
         libasound2 \
