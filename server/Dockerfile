@@ -1,10 +1,14 @@
-FROM python:3.11-slim
+FROM python:3.11-bullseye
 
 ENV PYTHONUNBUFFERED=1
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Install system deps needed by aiortc / av / ffmpeg and minimal libs for headless pygame
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        apt-transport-https \
+        gnupg \
         build-essential \
         ffmpeg \
         xvfb \
@@ -20,7 +24,7 @@ RUN apt-get update \
         libxext6 \
         libxrender1 \
         fonts-dejavu-core \
-        libavcodec-dev libavformat-dev libavdevice-dev libavutil-dev libavfilter-dev libavresample-dev \
+        libavcodec-dev libavformat-dev libavdevice-dev libavutil-dev libavfilter-dev \
         pkg-config \
         libssl-dev \
         libsrtp2-dev \
