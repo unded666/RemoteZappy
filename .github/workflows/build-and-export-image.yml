@@ -1,0 +1,52 @@
+name: Build and export Docker image
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker image
+        run: |
+          docker build -t remotezappy-server:latest -f server/Dockerfile .
+
+      - name: Run container and wait for /healthz
+        run: |
+          # start container (publish port so curl can reach it)
+          docker run -d --name remotezappy-test -e PORT=8080 -p 8080:8080 remotezappy-server:latest
+          # wait up to 60s for health endpoint
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8080/healthz >/dev/null 2>&1; then
+              echo "health ok"
+              break
+            fi
+            echo "waiting for health... ($i)"
+            sleep 1
+          done
+        shell: bash
+
+      - name: Stop and remove test container
+        run: |
+          docker stop remotezappy-test || true
+          docker rm remotezappy-test || true
+
+      - name: Save image to compressed tarball
+        run: |
+          docker save remotezappy-server:latest | gzip > remotezappy-server.tar.gz
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: remotezappy-server-image
+          path: remotezappy-server.tar.gz
+
